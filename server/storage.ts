@@ -147,6 +147,41 @@ export class DatabaseStorage implements IStorage {
     const [order] = await db.update(orders).set(updateData).where(eq(orders.id, id)).returning();
     return order;
   }
+
+  async getAllOrders(): Promise<Order[]> {
+    return await db.select().from(orders);
+  }
+
+  // Admin & Users
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getUserById(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async updateUserRole(id: string, role: string): Promise<User | undefined> {
+    const [user] = await db.update(users).set({ role }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async getAdminStats(): Promise<any> {
+    const allShops = await db.select().from(shops);
+    const allUsers = await db.select().from(users);
+    const allOrders = await db.select().from(orders);
+    const allTasks = await db.select().from(tasks);
+
+    return {
+      totalShops: allShops.length,
+      activeShops: allShops.filter(s => s.status === 'active').length,
+      totalUsers: allUsers.length,
+      totalOrders: allOrders.length,
+      totalTasks: allTasks.length,
+      recentOrders: allOrders.slice(-10).reverse(),
+    };
+  }
 }
 
 export const storage = new DatabaseStorage();
