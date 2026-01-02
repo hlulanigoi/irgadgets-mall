@@ -63,6 +63,20 @@ export class DatabaseStorage implements IStorage {
     return shop;
   }
 
+  async updateShop(id: number, updates: Partial<InsertShop>): Promise<Shop | undefined> {
+    const [shop] = await db.update(shops).set(updates).where(eq(shops.id, id)).returning();
+    return shop;
+  }
+
+  async updateShopStatus(id: number, status: "active" | "suspended"): Promise<Shop | undefined> {
+    const [shop] = await db.update(shops).set({ status }).where(eq(shops.id, id)).returning();
+    return shop;
+  }
+
+  async getShopsByOwner(ownerId: string): Promise<Shop[]> {
+    return await db.select().from(shops).where(eq(shops.ownerId, ownerId));
+  }
+
   // Products
   async getProductsByShop(shopId: number): Promise<Product[]> {
     return await db.select().from(products).where(eq(products.shopId, shopId));
