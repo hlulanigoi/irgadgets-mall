@@ -101,6 +101,44 @@ export async function registerRoutes(
     }
   });
 
+  // Orders
+  app.post("/api/orders", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const order = await storage.createOrder({
+        ...req.body,
+        customerId: userId,
+        status: "pending"
+      });
+      res.status(201).json(order);
+    } catch (err) {
+      res.status(400).json({ message: "Failed to create order" });
+    }
+  });
+
+  app.get("/api/orders/my", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any).claims.sub;
+    const orders = await storage.getOrdersByUser(userId);
+    res.json(orders);
+  });
+
+  app.get("/api/orders/pending-transport", isAuthenticated, async (req, res) => {
+    const orders = await storage.getPendingTransportOrders();
+    res.json(orders);
+  });
+
+  app.patch("/api/orders/:id/status", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any).claims.sub;
+    const { status } = req.body;
+    const order = await storage.updateOrderStatus(
+      Number(req.params.id),
+      status,
+      status === "picked_up" ? userId : undefined
+    );
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    res.json(order);
+  });
+
   // Seed data
   if (process.env.NODE_ENV !== "production") {
     const shops = await storage.getShops();

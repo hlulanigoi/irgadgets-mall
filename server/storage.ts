@@ -33,34 +33,6 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // ... (previous methods)
-
-  async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const [order] = await db.insert(orders).values(insertOrder).returning();
-    return order;
-  }
-
-  async getOrdersByUser(userId: string): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.customerId, userId));
-  }
-
-  async getOrdersByShop(shopId: number): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.shopId, shopId));
-  }
-
-  async getPendingTransportOrders(): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.status, "transport_requested"));
-  }
-
-  async updateOrderStatus(id: number, status: any, transportId?: string): Promise<Order | undefined> {
-    const updateData: any = { status };
-    if (transportId) updateData.transportId = transportId;
-    const [order] = await db.update(orders).set(updateData).where(eq(orders.id, id)).returning();
-    return order;
-  }
-}
-
-export class DatabaseStorage implements IStorage {
   // Shops
   async getShops(category?: "tailor" | "laundry" | "retail" | "service"): Promise<Shop[]> {
     if (category) {
@@ -109,6 +81,31 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tasks.id, id))
       .returning();
     return task;
+  }
+
+  // Orders
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const [order] = await db.insert(orders).values(insertOrder).returning();
+    return order;
+  }
+
+  async getOrdersByUser(userId: string): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.customerId, userId));
+  }
+
+  async getOrdersByShop(shopId: number): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.shopId, shopId));
+  }
+
+  async getPendingTransportOrders(): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.status, "transport_requested"));
+  }
+
+  async updateOrderStatus(id: number, status: any, transportId?: string): Promise<Order | undefined> {
+    const updateData: any = { status };
+    if (transportId) updateData.transportId = transportId;
+    const [order] = await db.update(orders).set(updateData).where(eq(orders.id, id)).returning();
+    return order;
   }
 }
 
