@@ -9,6 +9,8 @@ export * from "./models/auth";
 export const shopCategoryEnum = pgEnum("shop_category", ["tailor", "laundry", "retail", "service"]);
 export const taskStatusEnum = pgEnum("task_status", ["open", "in_progress", "completed"]);
 
+export const shopStatusEnum = pgEnum("shop_status", ["active", "suspended"]);
+
 export const shops = pgTable("shops", {
   id: serial("id").primaryKey(),
   ownerId: varchar("owner_id").notNull(), // References users.id (which is varchar from auth schema)
@@ -17,6 +19,7 @@ export const shops = pgTable("shops", {
   category: shopCategoryEnum("category").notNull(),
   imageUrl: text("image_url").notNull(),
   location: text("location").notNull(),
+  status: shopStatusEnum("status").default("active"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
