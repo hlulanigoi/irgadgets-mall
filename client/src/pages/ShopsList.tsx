@@ -3,13 +3,24 @@ import { Navigation } from "@/components/Navigation";
 import { ShopCard } from "@/components/ShopCard";
 import { CreateShopModal } from "@/components/CreateShopModal";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Loader2, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ShopsList() {
-  const [filter, setFilter] = useState<"tailor" | "laundry" | "retail" | "service" | undefined>();
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(window.location.search);
+  const categoryParam = searchParams.get("category") as "tailor" | "laundry" | "retail" | "service" | null;
+  
+  const [filter, setFilter] = useState<"tailor" | "laundry" | "retail" | "service" | undefined>(categoryParam || undefined);
   const { data: shops, isLoading, error } = useShops(filter);
+
+  useEffect(() => {
+    if (categoryParam) {
+      setFilter(categoryParam);
+    }
+  }, [categoryParam]);
 
   const categories = [
     { id: undefined, label: "All Shops" },

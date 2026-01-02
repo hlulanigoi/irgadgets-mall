@@ -129,7 +129,7 @@ export default function Home() {
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-1">{cat.name}</h3>
                     <p className="text-white/90 text-sm opacity-0 group-hover:opacity-100 transition-all duration-500">
-                      Explore {cat.name.toLowerCase()} near you
+                      View shops and place orders
                     </p>
                   </div>
                 </motion.div>
