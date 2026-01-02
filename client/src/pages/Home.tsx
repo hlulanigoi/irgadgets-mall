@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
 import { Link } from "wouter";
-import { ArrowRight, ShoppingBag, Scissors, Briefcase, Shirt } from "lucide-react";
+import { ArrowRight, ShoppingBag, Scissors, Briefcase, Shirt, Store } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
