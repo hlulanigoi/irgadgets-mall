@@ -62,6 +62,16 @@ async function upsertUser(claims: any) {
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
+  
+  // Skip auth setup if REPL_ID is not set (development mode)
+  if (!process.env.REPL_ID) {
+    console.log("⚠️  Running in development mode without Replit Auth");
+    app.use(getSession());
+    app.use(passport.initialize());
+    app.use(passport.session());
+    return;
+  }
+  
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
