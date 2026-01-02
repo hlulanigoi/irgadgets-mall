@@ -14,10 +14,15 @@ export interface IStorage {
   getShops(category?: "tailor" | "laundry" | "retail" | "service"): Promise<Shop[]>;
   getShop(id: number): Promise<Shop | undefined>;
   createShop(shop: InsertShop): Promise<Shop>;
+  updateShop(id: number, updates: Partial<InsertShop>): Promise<Shop | undefined>;
+  updateShopStatus(id: number, status: "active" | "suspended"): Promise<Shop | undefined>;
+  getShopsByOwner(ownerId: string): Promise<Shop[]>;
   
   // Products
   getProductsByShop(shopId: number): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<boolean>;
   
   // Tasks
   getTasks(): Promise<Task[]>;
@@ -30,6 +35,13 @@ export interface IStorage {
   getOrdersByShop(shopId: number): Promise<Order[]>;
   getPendingTransportOrders(): Promise<Order[]>;
   updateOrderStatus(id: number, status: string, transportId?: string): Promise<Order | undefined>;
+  getAllOrders(): Promise<Order[]>;
+  
+  // Admin & Users
+  getAllUsers(): Promise<User[]>;
+  getUserById(id: string): Promise<User | undefined>;
+  updateUserRole(id: string, role: string): Promise<User | undefined>;
+  getAdminStats(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
