@@ -3,6 +3,7 @@ import { useShop, useShopProducts, useCreateProduct } from "@/hooks/use-shops";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,11 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProductSchema } from "@shared/schema";
+import { insertProductSchema, type Order } from "@shared/schema";
 import { z } from "zod";
-import { Loader2, MapPin, Tag, ArrowLeft, Plus, Check } from "lucide-react";
+import { Loader2, MapPin, Tag, ArrowLeft, Plus, Check, ShoppingCart, Truck, Clock } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormControl,
@@ -140,6 +144,43 @@ function AddProductModal({ shopId }: { shopId: number }) {
   );
 }
 
+function ShopOwnerOrders({ shopId }: { shopId: number }) {
+  const { data: orders, isLoading } = useQuery<Order[]>({
+    queryKey: [`/api/shops/${shopId}/orders`],
+  });
+
+  if (isLoading) return <Loader2 className="animate-spin" />;
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-xl font-bold font-display">Incoming Orders</h3>
+      {orders?.length === 0 ? (
+        <p className="text-muted-foreground">No orders yet.</p>
+      ) : (
+        <div className="grid gap-4">
+          {orders?.map((order: Order) => (
+            <Card key={order.id}>
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-bold">Order #{order.id}</p>
+                    <p className="text-sm text-muted-foreground">Status: {order.status}</p>
+                  </div>
+                  <div className="text-sm">
+                    {order.status === "pending" && "Preparing..."}
+                    {order.status === "transport_requested" && "Waiting for transport..."}
+                    {order.status === "picked_up" && "Out for delivery!"}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ShopDetail() {
   const [match, params] = useRoute("/shops/:id");
   const shopId = params ? parseInt(params.id) : 0;
@@ -147,6 +188,27 @@ export default function ShopDetail() {
   const { data: shop, isLoading: shopLoading } = useShop(shopId);
   const { data: products, isLoading: productsLoading } = useShopProducts(shopId);
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const orderMutation = useMutation({
+    mutationFn: async ({ productId, transportRequested }: { productId: number, transportRequested: boolean }) => {
+      const res = await apiRequest("POST", "/api/orders", {
+        shopId,
+        productId,
+        status: transportRequested ? "transport_requested" : "pending"
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Order Placed!",
+        description: "Your order has been sent. Community members can now see your transport request if selected.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/my"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/pending-transport"] });
+    },
+  });
 
   if (shopLoading) return <div className="min-h-screen grid place-items-center"><Loader2 className="animate-spin" /></div>;
   if (!shop) return <div>Shop not found</div>;
@@ -193,42 +255,64 @@ export default function ShopDetail() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Content - Products */}
-          <div className="lg:col-span-2 space-y-8">
-            <h2 className="text-2xl font-bold font-display text-gray-900 border-b pb-4">
-              Products & Services
-            </h2>
-            
-            {productsLoading ? (
-              <Loader2 className="animate-spin mx-auto text-primary" />
-            ) : products?.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-xl border border-dashed">
-                <p className="text-gray-500">No products available yet.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {products?.map((product) => (
-                  <div key={product.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
-                    <div className="aspect-square relative overflow-hidden bg-gray-50">
-                       <img 
-                        src={product.imageUrl} 
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-lg text-gray-900">{product.name}</h3>
-                        <span className="font-mono font-bold text-primary">R{product.price}</span>
+          <div className="lg:col-span-2 space-y-12">
+            {isOwner && <ShopOwnerOrders shopId={shopId} />}
+
+            <div className="space-y-8">
+              <h2 className="text-2xl font-bold font-display text-gray-900 border-b pb-4">
+                Products & Services
+              </h2>
+              
+              {productsLoading ? (
+                <Loader2 className="animate-spin mx-auto text-primary" />
+              ) : products?.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-xl border border-dashed">
+                  <p className="text-gray-500">No products available yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {products?.map((product) => (
+                    <Card key={product.id} className="overflow-hidden group hover:shadow-lg transition-all duration-300">
+                      <div className="aspect-square relative overflow-hidden bg-gray-50">
+                         <img 
+                          src={product.imageUrl} 
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                       </div>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
-                      <Button variant="outline" className="w-full text-sm">
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <CardHeader>
+                        <CardTitle className="flex justify-between items-center">
+                          <span className="font-bold text-lg text-gray-900">{product.name}</span>
+                          <span className="font-mono font-bold text-primary">R{product.price}</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
+                      </CardContent>
+                      <CardFooter className="flex flex-col gap-2">
+                        <Button 
+                          className="w-full rounded-full gap-2"
+                          onClick={() => orderMutation.mutate({ productId: product.id, transportRequested: false })}
+                          disabled={orderMutation.isPending || isOwner}
+                        >
+                          {orderMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingCart className="w-4 h-4" />}
+                          Standard Order
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          className="w-full rounded-full gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                          onClick={() => orderMutation.mutate({ productId: product.id, transportRequested: true })}
+                          disabled={orderMutation.isPending || isOwner}
+                        >
+                          <Truck className="w-4 h-4" />
+                          Order + Transport
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Sidebar - About */}
@@ -248,12 +332,34 @@ export default function ShopDetail() {
                   <MapPin className="w-4 h-4 text-primary mr-2" />
                   {shop.location}
                 </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span>Open today until 5:00 PM</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <Truck className="w-4 h-4 text-primary" />
+                  <span>Delivery available in local area</span>
+                </div>
               </div>
               
               <Button className="w-full mt-6 bg-gray-900 text-white hover:bg-black">
                 Contact Shop
               </Button>
             </div>
+
+            <Card className="bg-primary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-primary">Need help with transport?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-primary/80 mb-4">
+                  Request a local community member to pick up and deliver your order.
+                </p>
+                <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/10" onClick={() => window.location.href = '/tasks'}>
+                  Find a Transporter
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

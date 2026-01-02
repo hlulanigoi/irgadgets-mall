@@ -108,7 +108,7 @@ export async function registerRoutes(
       const order = await storage.createOrder({
         ...req.body,
         customerId: userId,
-        status: "pending"
+        status: req.body.status || "pending"
       });
       res.status(201).json(order);
     } catch (err) {
@@ -137,6 +137,11 @@ export async function registerRoutes(
     );
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
+  });
+
+  app.get("/api/shops/:shopId/orders", isAuthenticated, async (req, res) => {
+    const orders = await storage.getOrdersByShop(Number(req.params.shopId));
+    res.json(orders);
   });
 
   // Seed data

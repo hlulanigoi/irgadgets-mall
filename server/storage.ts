@@ -1,6 +1,6 @@
 import { 
   users, shops, products, tasks, orders,
-  type User, type InsertUser,
+  type User,
   type Shop, type InsertShop,
   type Product, type InsertProduct,
   type Task, type InsertTask,
@@ -84,6 +84,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Orders
+  async getOrdersByShop(shopId: number): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.shopId, shopId));
+  }
+
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const [order] = await db.insert(orders).values(insertOrder).returning();
     return order;
@@ -101,7 +105,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(orders).where(eq(orders.status, "transport_requested"));
   }
 
-  async updateOrderStatus(id: number, status: any, transportId?: string): Promise<Order | undefined> {
+  async updateOrderStatus(id: number, status: string, transportId?: string): Promise<Order | undefined> {
     const updateData: any = { status };
     if (transportId) updateData.transportId = transportId;
     const [order] = await db.update(orders).set(updateData).where(eq(orders.id, id)).returning();
