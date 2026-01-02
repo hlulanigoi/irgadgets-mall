@@ -55,10 +55,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="text-5xl md:text-7xl font-display font-bold text-gray-900 leading-[1.1]"
+              className="text-5xl md:text-7xl font-display font-bold text-gray-900 leading-[1.1] text-balance"
             >
-              Your Local <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Mall</span>, <br />
-              <span className="italic font-serif font-medium text-4xl md:text-6xl text-gray-600">Digitally Reimagined.</span>
+              Your Local <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-accent">Mall</span>, <br />
+              <span className="italic font-serif font-medium text-4xl md:text-6xl text-muted-foreground">Digitally Reimagined.</span>
             </motion.h1>
             
             <motion.p 
@@ -112,23 +112,23 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
                   viewport={{ once: true }}
-                  className="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-300"
+                  className="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                 >
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors z-10" />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500 z-10" />
                   
                   {/* Unsplash Category Image */}
                   <img 
                     src={cat.img} 
                     alt={cat.name} 
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
                   
-                  <div className="absolute inset-0 z-20 p-6 flex flex-col justify-end">
-                    <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center backdrop-blur-md bg-white/20 text-white`}>
+                  <div className="absolute inset-0 z-20 p-6 flex flex-col justify-end translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center backdrop-blur-md bg-white/20 text-white group-hover:bg-primary group-hover:scale-110 transition-all duration-500`}>
                       <cat.icon size={24} />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-1 group-hover:translate-x-1 transition-transform">{cat.name}</h3>
-                    <p className="text-white/80 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                    <h3 className="text-2xl font-bold text-white mb-1">{cat.name}</h3>
+                    <p className="text-white/90 text-sm opacity-0 group-hover:opacity-100 transition-all duration-500">
                       Explore {cat.name.toLowerCase()} near you
                     </p>
                   </div>
@@ -182,22 +182,22 @@ export default function Home() {
             {/* Abstract visual */}
             <div className="relative w-full max-w-md aspect-square">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary to-accent rounded-full opacity-20 blur-3xl animate-pulse"></div>
-              <div className="relative bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 shadow-2xl transform rotate-3 hover:rotate-0 transition-all duration-500">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                    <Store size={24} />
+                <div className="relative bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl transform rotate-3 hover:rotate-0 transition-all duration-700 group cursor-default">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+                      <Store size={24} />
+                    </div>
+                    <div>
+                      <div className="h-4 w-32 bg-white/30 rounded mb-2"></div>
+                      <div className="h-3 w-20 bg-white/20 rounded"></div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="h-4 w-32 bg-white/20 rounded mb-2"></div>
-                    <div className="h-3 w-20 bg-white/10 rounded"></div>
+                  <div className="space-y-4">
+                    <div className="h-24 bg-white/10 rounded-xl border border-white/10 group-hover:bg-white/15 transition-colors duration-500"></div>
+                    <div className="h-4 w-full bg-white/20 rounded"></div>
+                    <div className="h-4 w-3/4 bg-white/20 rounded"></div>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="h-24 bg-white/5 rounded-xl border border-white/5"></div>
-                  <div className="h-4 w-full bg-white/10 rounded"></div>
-                  <div className="h-4 w-3/4 bg-white/10 rounded"></div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
