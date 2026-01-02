@@ -10,7 +10,10 @@ import { authStorage } from "./storage";
 
 const getOidcConfig = memoize(
   async () => {
-    const replId = process.env.REPL_ID || "dev-repl-id";
+    if (!process.env.REPL_ID) {
+      throw new Error("REPL_ID not set - cannot initialize OIDC config");
+    }
+    const replId = process.env.REPL_ID;
     const issuerUrl = process.env.ISSUER_URL ?? "https://replit.com/oidc";
     return await client.discovery(
       new URL(issuerUrl),
