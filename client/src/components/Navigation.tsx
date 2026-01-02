@@ -9,24 +9,59 @@ import {
   Briefcase,
   Store,
   Menu,
-  X
+  X,
+  LayoutDashboard,
+  Settings,
+  Users,
+  Package
 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
   const [location] = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Fetch user details to get role
+  const { data: userData } = useQuery({
+    queryKey: [`/api/admin/users`],
+    enabled: isAuthenticated,
+    retry: false,
+  });
+
+  const currentUser = userData?.find((u: any) => u.id === user?.id);
+  const userRole = currentUser?.role || 'customer';
+
   const navItems = [
     { href: "/shops", label: "Shops", icon: Store },
     { href: "/tasks", label: "Tasks", icon: Briefcase },
   ];
+
+  // Role-based navigation items
+  const roleNavItems = {
+    admin: [
+      { href: "/admin", label: "Admin Dashboard", icon: LayoutDashboard },
+      { href: "/admin/users", label: "Users", icon: Users },
+      { href: "/admin/shops", label: "Shops", icon: Store },
+      { href: "/admin/orders", label: "Orders", icon: Package },
+    ],
+    shop_owner: [
+      { href: "/dashboard", label: "My Dashboard", icon: LayoutDashboard },
+    ],
+  };
 
   const handleLogout = () => {
     logout();
@@ -68,6 +103,28 @@ export function Navigation() {
         <div className="hidden md:flex items-center gap-4">
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
+              {/* Role-based dropdown menu */}
+              {(userRole === 'admin' || userRole === 'shop_owner') && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <LayoutDashboard className="w-4 h-4" />
+                      {userRole === 'admin' ? 'Admin' : 'Dashboard'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {roleNavItems[userRole as 'admin' | 'shop_owner']?.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link href={item.href} className="flex items-center gap-2 cursor-pointer">
+                          <item.icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              
               <span className="text-sm font-medium text-gray-600">
                 Hi, {user?.firstName || 'User'}
               </span>
@@ -118,6 +175,28 @@ export function Navigation() {
                   {item.label}
                 </Link>
               ))}
+              
+              {/* Role-based mobile navigation */}
+              {isAuthenticated && (userRole === 'admin' || userRole === 'shop_owner') && (
+                <>
+                  <div className="border-t pt-4">
+                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide">
+                      {userRole === 'admin' ? 'Admin' : 'Dashboard'}
+                    </p>
+                    {roleNavItems[userRole as 'admin' | 'shop_owner']?.map((item) => (
+                      <Link 
+                        key={item.href} 
+                        href={item.href}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 text-lg font-medium text-gray-600 mb-4"
+                      >
+                        <item.icon size={20} />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
               
               <div className="mt-auto border-t pt-6">
                 {isAuthenticated ? (
