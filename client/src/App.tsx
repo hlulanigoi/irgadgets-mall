@@ -8,6 +8,11 @@ import Home from "@/pages/Home";
 import ShopsList from "@/pages/ShopsList";
 import ShopDetail from "@/pages/ShopDetail";
 import TasksList from "@/pages/TasksList";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsers from "@/pages/admin/AdminUsers";
+import AdminShops from "@/pages/admin/AdminShops";
+import AdminOrders from "@/pages/admin/AdminOrders";
+import ShopOwnerDashboard from "@/pages/shop-owner/ShopOwnerDashboard";
 
 function Router() {
   return (
@@ -16,6 +21,11 @@ function Router() {
       <Route path="/shops" component={ShopsList} />
       <Route path="/shops/:id" component={ShopDetail} />
       <Route path="/tasks" component={TasksList} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/users" component={AdminUsers} />
+      <Route path="/admin/shops" component={AdminShops} />
+      <Route path="/admin/orders" component={AdminOrders} />
+      <Route path="/dashboard" component={ShopOwnerDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
