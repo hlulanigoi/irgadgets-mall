@@ -1,12 +1,13 @@
 import { 
-  users, shops, products, tasks,
+  users, shops, products, tasks, orders,
   type User, type InsertUser,
   type Shop, type InsertShop,
   type Product, type InsertProduct,
-  type Task, type InsertTask
+  type Task, type InsertTask,
+  type Order, type InsertOrder
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 export interface IStorage {
   // Shops
@@ -22,6 +23,41 @@ export interface IStorage {
   getTasks(): Promise<Task[]>;
   createTask(task: InsertTask): Promise<Task>;
   updateTaskStatus(id: number, status: "open" | "in_progress" | "completed", assigneeId?: string): Promise<Task | undefined>;
+
+  // Orders
+  createOrder(order: InsertOrder): Promise<Order>;
+  getOrdersByUser(userId: string): Promise<Order[]>;
+  getOrdersByShop(shopId: number): Promise<Order[]>;
+  getPendingTransportOrders(): Promise<Order[]>;
+  updateOrderStatus(id: number, status: string, transportId?: string): Promise<Order | undefined>;
+}
+
+export class DatabaseStorage implements IStorage {
+  // ... (previous methods)
+
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const [order] = await db.insert(orders).values(insertOrder).returning();
+    return order;
+  }
+
+  async getOrdersByUser(userId: string): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.customerId, userId));
+  }
+
+  async getOrdersByShop(shopId: number): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.shopId, shopId));
+  }
+
+  async getPendingTransportOrders(): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.status, "transport_requested"));
+  }
+
+  async updateOrderStatus(id: number, status: any, transportId?: string): Promise<Order | undefined> {
+    const updateData: any = { status };
+    if (transportId) updateData.transportId = transportId;
+    const [order] = await db.update(orders).set(updateData).where(eq(orders.id, id)).returning();
+    return order;
+  }
 }
 
 export class DatabaseStorage implements IStorage {
