@@ -143,6 +143,30 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // In development without Replit, create a mock user
+  if (!process.env.REPL_ID) {
+    if (!req.user) {
+      req.user = {
+        claims: { sub: 'dev-user-admin', email: 'admin@dev.local', first_name: 'Admin', last_name: 'User' },
+        access_token: 'dev-token',
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+      } as any;
+      // Create dev user in database if not exists
+      await authStorage.upsertUser({
+        id: 'dev-user-admin',
+        email: 'admin@dev.local',
+        firstName: 'Admin',
+        lastName: 'User',
+      });
+      // Update role to admin for dev user
+      const { db } = await import('../db');
+      const { users } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      await db.update(users).set({ role: 'admin' }).where(eq(users.id, 'dev-user-admin'));
+    }
+    return next();
+  }
+  
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {
