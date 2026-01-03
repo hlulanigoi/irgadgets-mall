@@ -166,7 +166,7 @@ export default function Home() {
                 <Button 
                   size="lg" 
                   className="bg-accent hover:bg-accent/90 text-secondary-foreground font-semibold px-8 h-12 rounded-full"
-                  onClick={() => window.location.href = user ? '/shops' : '/api/login'}
+                  onClick={() => user ? window.location.href = '/shops' : setShowAuthModal(true)}
                 >
                   Start Selling
                 </Button>
