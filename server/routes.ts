@@ -2,16 +2,18 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
-import { setupAuth, registerAuthRoutes, isAuthenticated, authStorage } from "./replit_integrations/auth";
+import { initializeFirebaseAdmin, registerFirebaseAuthRoutes, isAuthenticated, authStorage, type AuthRequest } from "./firebase";
 import { z } from "zod";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Setup Auth
-  await setupAuth(app);
-  registerAuthRoutes(app);
+  // Initialize Firebase Admin
+  initializeFirebaseAdmin();
+  
+  // Register Firebase Auth Routes
+  registerFirebaseAuthRoutes(app);
 
   // Shops
   app.get(api.shops.list.path, async (req, res) => {
