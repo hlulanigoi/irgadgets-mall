@@ -36,7 +36,13 @@ export function log(message: string, source = "express") {
     hour12: true,
   });
 
-  console.log(`${formattedTime} [${source}] ${message}`);
+  const logMessage = `${formattedTime} [${source}] ${message}`;
+  console.log(logMessage);
+  
+  // Also log to winston in production
+  if (process.env.NODE_ENV === 'production') {
+    logInfo(message, { source });
+  }
 }
 
 app.use((req, res, next) => {
