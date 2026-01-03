@@ -214,7 +214,11 @@ export function Navigation() {
                 ) : (
                   <Button 
                     className="w-full bg-primary hover:bg-primary/90"
-                    onClick={() => window.location.href = "/api/login"}
+                    onClick={() => {
+                      setIsOpen(false);
+                      setShowAuthModal(true);
+                    }}
+                    data-testid="mobile-sign-in-button"
                   >
                     Sign In
                   </Button>
@@ -224,6 +228,9 @@ export function Navigation() {
           </SheetContent>
         </Sheet>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </nav>
   );
 }
