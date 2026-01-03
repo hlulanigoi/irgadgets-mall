@@ -47,7 +47,7 @@ export async function registerRoutes(
     res.json(products);
   });
 
-  app.post(api.products.create.path, isAuthenticated, async (req, res) => {
+  app.post(api.products.create.path, isAuthenticated, async (req: AuthRequest, res) => {
     try {
       const input = api.products.create.input.parse(req.body);
       const product = await storage.createProduct({
@@ -69,7 +69,7 @@ export async function registerRoutes(
     res.json(tasks);
   });
 
-  app.post(api.tasks.create.path, isAuthenticated, async (req, res) => {
+  app.post(api.tasks.create.path, isAuthenticated, async (req: AuthRequest, res) => {
     try {
       const input = api.tasks.create.input.parse(req.body);
       const task = await storage.createTask(input);
@@ -82,10 +82,10 @@ export async function registerRoutes(
     }
   });
 
-  app.patch(api.tasks.updateStatus.path, isAuthenticated, async (req, res) => {
+  app.patch(api.tasks.updateStatus.path, isAuthenticated, async (req: AuthRequest, res) => {
     try {
       const { status } = api.tasks.updateStatus.input.parse(req.body);
-      const userId = (req.user as any).claims.sub;
+      const userId = req.user!.uid;
       
       const task = await storage.updateTaskStatus(
         Number(req.params.id), 
@@ -104,9 +104,9 @@ export async function registerRoutes(
   });
 
   // Orders
-  app.post("/api/orders", isAuthenticated, async (req, res) => {
+  app.post("/api/orders", isAuthenticated, async (req: AuthRequest, res) => {
     try {
-      const userId = (req.user as any).claims.sub;
+      const userId = req.user!.uid;
       const order = await storage.createOrder({
         ...req.body,
         customerId: userId,
@@ -118,19 +118,19 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/orders/my", isAuthenticated, async (req, res) => {
-    const userId = (req.user as any).claims.sub;
+  app.get("/api/orders/my", isAuthenticated, async (req: AuthRequest, res) => {
+    const userId = req.user!.uid;
     const orders = await storage.getOrdersByUser(userId);
     res.json(orders);
   });
 
-  app.get("/api/orders/pending-transport", isAuthenticated, async (req, res) => {
+  app.get("/api/orders/pending-transport", isAuthenticated, async (req: AuthRequest, res) => {
     const orders = await storage.getPendingTransportOrders();
     res.json(orders);
   });
 
-  app.patch("/api/orders/:id/status", isAuthenticated, async (req, res) => {
-    const userId = (req.user as any).claims.sub;
+  app.patch("/api/orders/:id/status", isAuthenticated, async (req: AuthRequest, res) => {
+    const userId = req.user!.uid;
     const { status } = req.body;
     const order = await storage.updateOrderStatus(
       Number(req.params.id),
@@ -141,22 +141,21 @@ export async function registerRoutes(
     res.json(order);
   });
 
-  app.get("/api/shops/:shopId/orders", isAuthenticated, async (req, res) => {
+  app.get("/api/shops/:shopId/orders", isAuthenticated, async (req: AuthRequest, res) => {
     const orders = await storage.getOrdersByShop(Number(req.params.shopId));
     res.json(orders);
   });
 
   // Admin Routes
-  const isAdmin = (req: any, res: any, next: any) => {
+  const isAdmin = async (req: AuthRequest, res: any, next: any) => {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-    const userId = req.user.claims.sub;
-    storage.getUserById(userId).then(user => {
-      if (user?.role === 'admin') {
-        next();
-      } else {
-        res.status(403).json({ message: "Forbidden: Admin access required" });
-      }
-    });
+    const userId = req.user.uid;
+    const user = await storage.getUserById(userId);
+    if (user?.role === 'admin') {
+      next();
+    } else {
+      res.status(403).json({ message: "Forbidden: Admin access required" });
+    }
   };
 
   app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req, res) => {
