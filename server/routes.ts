@@ -158,34 +158,34 @@ export async function registerRoutes(
     }
   };
 
-  app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req: AuthRequest, res) => {
     const stats = await storage.getAdminStats();
     res.json(stats);
   });
 
-  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req: AuthRequest, res) => {
     const users = await storage.getAllUsers();
     res.json(users);
   });
 
-  app.get("/api/admin/shops", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/shops", isAuthenticated, isAdmin, async (req: AuthRequest, res) => {
     const shops = await storage.getShops();
     res.json(shops);
   });
 
-  app.patch("/api/admin/shops/:id/status", isAuthenticated, isAdmin, async (req, res) => {
+  app.patch("/api/admin/shops/:id/status", isAuthenticated, isAdmin, async (req: AuthRequest, res) => {
     const { status } = req.body;
     const shop = await storage.updateShopStatus(Number(req.params.id), status);
     if (!shop) return res.status(404).json({ message: "Shop not found" });
     res.json(shop);
   });
 
-  app.get("/api/admin/orders", isAuthenticated, isAdmin, async (req, res) => {
+  app.get("/api/admin/orders", isAuthenticated, isAdmin, async (req: AuthRequest, res) => {
     const orders = await storage.getAllOrders();
     res.json(orders);
   });
 
-  app.patch("/api/admin/users/:id/role", isAuthenticated, isAdmin, async (req, res) => {
+  app.patch("/api/admin/users/:id/role", isAuthenticated, isAdmin, async (req: AuthRequest, res) => {
     const { role } = req.body;
     const user = await storage.updateUserRole(req.params.id, role);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -193,8 +193,8 @@ export async function registerRoutes(
   });
 
   // Shop Owner Routes
-  app.get("/api/shop-owner/dashboard", isAuthenticated, async (req, res) => {
-    const userId = (req.user as any).claims.sub;
+  app.get("/api/shop-owner/dashboard", isAuthenticated, async (req: AuthRequest, res) => {
+    const userId = req.user!.uid;
     const shops = await storage.getShopsByOwner(userId);
     
     const shopStats = await Promise.all(shops.map(async (shop) => {
@@ -211,8 +211,8 @@ export async function registerRoutes(
     res.json(shopStats);
   });
 
-  app.patch("/api/shops/:id", isAuthenticated, async (req, res) => {
-    const userId = (req.user as any).claims.sub;
+  app.patch("/api/shops/:id", isAuthenticated, async (req: AuthRequest, res) => {
+    const userId = req.user!.uid;
     const shop = await storage.getShop(Number(req.params.id));
     
     if (!shop) return res.status(404).json({ message: "Shop not found" });
@@ -222,13 +222,13 @@ export async function registerRoutes(
     res.json(updated);
   });
 
-  app.patch("/api/products/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/products/:id", isAuthenticated, async (req: AuthRequest, res) => {
     const product = await storage.updateProduct(Number(req.params.id), req.body);
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json(product);
   });
 
-  app.delete("/api/products/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/products/:id", isAuthenticated, async (req: AuthRequest, res) => {
     await storage.deleteProduct(Number(req.params.id));
     res.json({ success: true });
   });
