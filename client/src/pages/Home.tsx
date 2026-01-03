@@ -205,6 +205,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }
