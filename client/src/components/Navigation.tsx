@@ -142,8 +142,9 @@ export function Navigation() {
             </div>
           ) : (
             <Button 
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => setShowAuthModal(true)}
               className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-full px-6"
+              data-testid="sign-in-button"
             >
               Sign In
             </Button>
