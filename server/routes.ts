@@ -28,7 +28,7 @@ export async function registerRoutes(
     res.json(shop);
   });
 
-  app.post(api.shops.create.path, isAuthenticated, async (req, res) => {
+  app.post(api.shops.create.path, isAuthenticated, async (req: AuthRequest, res) => {
     try {
       const input = api.shops.create.input.parse(req.body);
       const shop = await storage.createShop(input);
