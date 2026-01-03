@@ -1,12 +1,15 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
+import { AuthModal } from "@/components/AuthModal";
 import { Link } from "wouter";
 import { ArrowRight, ShoppingBag, Scissors, Briefcase, Shirt, Store } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function Home() {
   const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const categories = [
     { 
