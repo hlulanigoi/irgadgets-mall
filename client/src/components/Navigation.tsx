@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { AuthModal } from "@/components/AuthModal";
 import { 
   ShoppingBag, 
   MapPin, 
@@ -34,6 +35,7 @@ export function Navigation() {
   const [location] = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Fetch user details to get role
   const { data: userData } = useQuery({
