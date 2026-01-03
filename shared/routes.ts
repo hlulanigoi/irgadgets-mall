@@ -109,3 +109,6 @@ export function buildUrl(path: string, params?: Record<string, string | number>)
   }
   return url;
 }
+
+// Type exports for API requests
+export type CreateTaskRequest = z.infer<typeof insertTaskSchema>;
