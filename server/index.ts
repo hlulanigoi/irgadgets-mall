@@ -2,9 +2,15 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { setupSecurityMiddleware } from "./middleware/security";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { logger, logInfo } from "./lib/logger";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Setup security middleware (CORS, Helmet, Rate Limiting, Compression)
+setupSecurityMiddleware(app);
 
 declare module "http" {
   interface IncomingMessage {
